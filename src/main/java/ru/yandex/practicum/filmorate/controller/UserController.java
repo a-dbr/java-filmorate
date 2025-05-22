@@ -10,30 +10,30 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.JdbcFilmService;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.JdbcUserService;
 
 import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/films")
-public class FilmController {
-    private JdbcFilmService filmService;
+@RequestMapping("/api/v1/users")
+public class UserController {
+    private JdbcUserService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Film createFilm(@Valid @RequestBody Film film) {
-        return filmService.createFilm(film);
+    public User createUser(@Valid @RequestBody User user) {
+        return userService.createUser(user);
     }
 
     @GetMapping
-    public List<Film> getAllFilms() {
-        return filmService.getAllFilms();
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @PutMapping
-    public Film updateFilm(@Valid @RequestBody Film film) {
-        return filmService.updateFilm(film);
+    public User updateUser(@Valid @RequestBody User user) {
+        return userService.updateUser(user);
     }
 }
