@@ -8,40 +8,54 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<String> handleEmailAlreadyExistsException(final EmailAlreadyExistsException e) {
+    public ResponseEntity<Map<String,String>> handleEmailAlreadyExistsException(final EmailAlreadyExistsException e) {
         log.error("EmailAlreadyExistsException: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        Map<String,String> body = Collections.singletonMap("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(InvalidJsonFieldException.class)
-    public ResponseEntity<String> handleInvalidJsonFieldException(final InvalidJsonFieldException e) {
+    public ResponseEntity<Map<String,String>> handleInvalidJsonFieldException(final InvalidJsonFieldException e) {
         log.error("InvalidJsonFieldException: {} ", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        Map<String,String> body = Collections.singletonMap("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String,String>> handleNotFound(final NotFoundException e) {
+        log.error("NotFoundException: {}", e.getMessage());
+        Map<String,String> body = Collections.singletonMap("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
     // Обработка ошибок валидации
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleValidationException(final MethodArgumentNotValidException e) {
+    public ResponseEntity<Map<String, List<String>>> handleValidationException(final MethodArgumentNotValidException e) {
         // Собираем все сообщения ошибок валидации
-        String errors = e.getBindingResult().getAllErrors().stream()
+        List<String> errors = e.getBindingResult()
+                .getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.joining("; "));
+                .collect(Collectors.toList());
 
         log.error("Validation errors: {}", errors);
-        return ResponseEntity.badRequest().body("Ошибки валидации: " + errors);
+        Map<String,List<String>> body = Collections.singletonMap("errors", errors);
+        return ResponseEntity.badRequest().body(body);
     }
 
     // Обработка остальных ошибок
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleAllExceptions(final RuntimeException e) {
-        log.error(e.getMessage());
-        // Возвращаем HTTP 500 с сообщением
-        return new ResponseEntity<>("Произошла ошибка: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Map<String,String>> handleAll(final Exception e) {
+        log.error("Unexpected exception: {}", e.getMessage(), e);
+        Map<String,String> body = Collections.singletonMap("error", "Internal Server Error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }
