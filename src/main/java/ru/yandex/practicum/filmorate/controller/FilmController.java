@@ -17,7 +17,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/films")
+@RequestMapping("/films")
 public class FilmController {
     private JdbcFilmService filmService;
 

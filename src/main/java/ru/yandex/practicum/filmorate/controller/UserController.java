@@ -17,7 +17,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 public class UserController {
     private JdbcUserService userService;
 
