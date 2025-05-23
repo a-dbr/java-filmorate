@@ -51,7 +51,7 @@ public class DatabaseUserService implements UserService {
     public User updateUser(User user) {
         return userRepository.findById(user.getId())
                 .map(existingUser -> userRepository.save(user))
-                .orElseThrow(() -> new NotFoundException
-                        ("Обновление невозможно. Пользователь с ID " + user.getId() + " не найден."));
+                .orElseThrow(() -> new NotFoundException(
+                        "Обновление невозможно. Пользователь с ID " + user.getId() + " не найден."));
     }
 }
