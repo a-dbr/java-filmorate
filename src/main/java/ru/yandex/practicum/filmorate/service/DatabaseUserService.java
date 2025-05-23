@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.EmailAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -14,11 +15,12 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
-public class JdbcUserService implements UserService {
+public class DatabaseUserService implements UserService {
 
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public User createUser(User user) {
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
 
@@ -45,13 +47,11 @@ public class JdbcUserService implements UserService {
     }
 
     @Override
+    @Transactional
     public User updateUser(User user) {
-        Optional<User> existingUser = userRepository.findById(user.getId());
-
-        if (existingUser.isPresent()) {
-            return userRepository.save(user);
-        } else {
-            throw new NotFoundException("Обновление невозможно. Пользователь с ID " + user.getId() + " не найден.");
-        }
+        return userRepository.findById(user.getId())
+                .map(existingUser -> userRepository.save(user))
+                .orElseThrow(() -> new NotFoundException
+                        ("Обновление невозможно. Пользователь с ID " + user.getId() + " не найден."));
     }
 }
