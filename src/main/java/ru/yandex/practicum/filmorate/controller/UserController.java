@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.DatabaseUserService;
+import ru.yandex.practicum.filmorate.service.interfaces.UserService;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private DatabaseUserService userService;
+    private UserService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

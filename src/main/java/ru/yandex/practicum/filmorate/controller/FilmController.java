@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.DatabaseFilmService;
+import ru.yandex.practicum.filmorate.service.interfaces.FilmService;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private DatabaseFilmService filmService;
+    private FilmService filmService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
