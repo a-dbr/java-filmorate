@@ -147,12 +147,10 @@ class UserServiceTest {
 
         userService.makeFriends(user1.getId(), user2.getId());
         userService.removeFriend(user1.getId(), user2.getId());
-        List<Integer> firstUserFriends = userService.getUserFriends(user1.getId());
-        List<Integer> secondUserFriends = userService.getUserFriends(user2.getId());
-
-        assertTrue(firstUserFriends.isEmpty());
-        assertTrue(secondUserFriends.isEmpty());
-
+        assertThrows(NotFoundException.class,
+                () -> userService.getUserFriends(user1.getId()));
+        assertThrows(NotFoundException.class,
+                () -> userService.getUserFriends(user2.getId()));
     }
 
     @Test

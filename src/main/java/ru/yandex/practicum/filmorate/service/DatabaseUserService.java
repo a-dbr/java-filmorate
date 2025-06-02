@@ -54,12 +54,24 @@ public class DatabaseUserService implements UserService {
 
     @Override
     public List<Integer> getCommonFriends(int userId, int otherUserId) {
-        List<Integer> userFriends = userRepository.getFriends(userId);
-        Set<Integer> otherFriendsSet = new HashSet<>(userRepository.getFriends(otherUserId));
+        if (userRepository.findById(userId).isEmpty() ||
+                userRepository.findById(otherUserId).isEmpty()) {
+            throw new NotFoundException("Невозможно получить общих друзей: один из пользователей не найден");
+        }
 
-        return userFriends.stream()
-                .filter(otherFriendsSet::contains)
+        List<Integer> userFriends = userRepository.getFriends(userId);
+        List<Integer> otherFriends = userRepository.getFriends(otherUserId);
+
+        Set<Integer> otherSet = new HashSet<>(otherFriends);
+        List<Integer> common = userFriends.stream()
+                .filter(otherSet::contains)
                 .collect(Collectors.toList());
+
+        if (common.isEmpty()) {
+            throw new NotFoundException("У пользователей нет общих друзей");
+        }
+
+        return common;
     }
 
     @Override
@@ -74,7 +86,11 @@ public class DatabaseUserService implements UserService {
 
     @Override
     public List<Integer> getUserFriends(int id) {
-        return userRepository.getFriends(id);
+        List<Integer> userFriends = userRepository.getFriends(id);
+        if (userFriends.isEmpty()) {
+            throw new NotFoundException("У пользователя ID " + id + " нет друзей.");
+        }
+        return userFriends;
     }
 
     @Override
