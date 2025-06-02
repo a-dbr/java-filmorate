@@ -65,7 +65,7 @@ public class DatabaseFilmService implements FilmService {
     }
 
     @Override
-    public List<Integer> findMostLikedFilms(int count) {
+    public List<Film> findMostLikedFilms(int count) {
         if (count <= 0) {
             throw new IllegalArgumentException("Параметр count должен быть положительным числом");
         }

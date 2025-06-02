@@ -289,10 +289,10 @@ class FilmServiceTest {
         filmService.addLike(film1.getId(), savedUser2.getId());
         filmService.addLike(film2.getId(), savedUser1.getId());
 
-        List<Integer> top = filmService.findMostLikedFilms(2);
+        List<Film> top = filmService.findMostLikedFilms(2);
         assertEquals(2, top.size());
-        assertEquals(film1.getId(), top.get(0));
-        assertEquals(film2.getId(), top.get(1));
+        assertEquals(film1.getId(), top.get(0).getId());
+        assertEquals(film2.getId(), top.get(1).getId());
     }
 
     @Test

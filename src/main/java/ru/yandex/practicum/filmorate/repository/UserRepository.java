@@ -23,6 +23,12 @@ public class UserRepository {
     }
 
 
+    public boolean existsFriendship(int userId, int friendId) {
+        String sql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
+        return count != null && count > 0;
+    }
+
     public void deleteAll() {
         String sql = """
             DELETE FROM friends;
@@ -54,9 +60,14 @@ public class UserRepository {
         return results.stream().findFirst();
     }
 
-    public List<Integer> getFriends(int userId) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        return jdbcTemplate.queryForList(sql, Integer.class, userId);
+    public List<User> getFriends(int userId) {
+        String sql = """
+        SELECT u.*
+        FROM friends f
+        JOIN users u ON f.friend_id = u.id
+        WHERE f.user_id = ?
+        """;
+        return jdbcTemplate.query(sql, userRowMapper, userId);
     }
 
     public void makeFriends(int userId, int friendId) {
