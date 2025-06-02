@@ -49,17 +49,17 @@ public class FilmRepository {
         return results.stream().findFirst();
     }
 
-    public List<Integer> findMostLikedFilms(int count) {
+    public List<Film> findMostLikedFilms(int count) {
         String sql = """
-                SELECT f.id
-                FROM films f
-                LEFT JOIN likes l ON f.id = l.film_id
-                GROUP BY f.id
-                ORDER BY COUNT(l.user_id) DESC
-                LIMIT ?
-                """;
+        SELECT f.*
+        FROM films f
+        LEFT JOIN likes l ON f.id = l.film_id
+        GROUP BY f.id
+        ORDER BY COUNT(l.user_id) DESC
+        LIMIT ?
+        """;
 
-        return jdbcTemplate.queryForList(sql, Integer.class, count);
+        return jdbcTemplate.query(sql, filmRowMapper, count);
     }
 
     public boolean isLikeExists(int filmId, int userId) {

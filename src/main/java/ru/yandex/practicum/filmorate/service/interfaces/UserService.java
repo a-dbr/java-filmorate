@@ -10,11 +10,11 @@ public interface UserService {
 
     List<User> getAllUsers();
 
-    List<Integer> getCommonFriends(int userId, int otherUserId);
+    List<User> getCommonFriends(int userId, int otherUserId);
 
     User getUserById(int id);
 
-    List<Integer> getUserFriends(int id);
+    List<User> getUserFriends(int id);
 
     void makeFriends(int userId, int friendId);
 

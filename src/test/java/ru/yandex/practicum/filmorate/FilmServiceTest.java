@@ -227,30 +227,6 @@ class FilmServiceTest {
     }
 
     @Test
-    void deleteLikeNotFound() {
-        User user = User.builder()
-                .id(0)
-                .email("test@user.ru")
-                .login("testuser")
-                .name("Test User")
-                .birthday(LocalDate.of(1990, 1, 1))
-                .build();
-        User savedUser = userRepository.save(user);
-
-        Film film = Film.builder()
-                .id(0)
-                .name("Test Film")
-                .description("Test Desc")
-                .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(120)
-                .build();
-        Film savedFilm = filmRepository.save(film);
-
-        assertThrows(OperationNotAllowedException.class,
-                () -> filmService.deleteLike(savedFilm.getId(), savedUser.getId()));
-    }
-
-    @Test
     void findMostLikedFilms() {
         User user1 = User.builder()
                 .id(0)
@@ -289,10 +265,10 @@ class FilmServiceTest {
         filmService.addLike(film1.getId(), savedUser2.getId());
         filmService.addLike(film2.getId(), savedUser1.getId());
 
-        List<Integer> top = filmService.findMostLikedFilms(2);
+        List<Film> top = filmService.findMostLikedFilms(2);
         assertEquals(2, top.size());
-        assertEquals(film1.getId(), top.get(0));
-        assertEquals(film2.getId(), top.get(1));
+        assertEquals(film1.getId(), top.get(0).getId());
+        assertEquals(film2.getId(), top.get(1).getId());
     }
 
     @Test

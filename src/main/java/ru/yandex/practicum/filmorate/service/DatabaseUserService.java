@@ -23,11 +23,6 @@ public class DatabaseUserService implements UserService {
 
     private final UserRepository userRepository;
 
-    private boolean checkFriendship(int userId, int friendId) {
-        List<Integer> friendsList = userRepository.getFriends(userId);
-        return friendsList != null && friendsList.contains(friendId);
-    }
-
     @Override
     @Transactional
     public User createUser(User user) {
@@ -53,17 +48,17 @@ public class DatabaseUserService implements UserService {
     }
 
     @Override
-    public List<Integer> getCommonFriends(int userId, int otherUserId) {
+    public List<User> getCommonFriends(int userId, int otherUserId) {
         if (userRepository.findById(userId).isEmpty() ||
                 userRepository.findById(otherUserId).isEmpty()) {
             throw new NotFoundException("Невозможно получить общих друзей: один из пользователей не найден");
         }
 
-        List<Integer> userFriends = userRepository.getFriends(userId);
-        List<Integer> otherFriends = userRepository.getFriends(otherUserId);
+        List<User> userFriends = userRepository.getFriends(userId);
+        List<User> otherFriends = userRepository.getFriends(otherUserId);
 
-        Set<Integer> otherSet = new HashSet<>(otherFriends);
-        List<Integer> common = userFriends.stream()
+        Set<User> otherSet = new HashSet<>(otherFriends);
+        List<User> common = userFriends.stream()
                 .filter(otherSet::contains)
                 .collect(Collectors.toList());
 
@@ -85,12 +80,11 @@ public class DatabaseUserService implements UserService {
     }
 
     @Override
-    public List<Integer> getUserFriends(int id) {
-        List<Integer> userFriends = userRepository.getFriends(id);
-        if (userFriends.isEmpty()) {
-            throw new NotFoundException("У пользователя ID " + id + " нет друзей.");
+    public List<User> getUserFriends(int id) {
+        if (userRepository.findById(id).isEmpty()) {
+            throw new NotFoundException("Пользователь с ID " + id + " не найден.");
         }
-        return userFriends;
+        return userRepository.getFriends(id);
     }
 
     @Override
@@ -105,7 +99,7 @@ public class DatabaseUserService implements UserService {
         if (!userRepository.existsById(userId) || !userRepository.existsById(friendId)) {
             throw new NotFoundException("Невозможно добавить в друзья: один из пользователей не найден.");
         }
-        if (checkFriendship(userId, friendId)) {
+        if (userRepository.existsFriendship(userId, friendId)) {
             throw new OperationNotAllowedException("Пользователи уже являются друзьями.");
         }
         userRepository.makeFriends(userId, friendId);
@@ -122,9 +116,6 @@ public class DatabaseUserService implements UserService {
         }
         if (!userRepository.existsById(userId) || !userRepository.existsById(friendId)) {
             throw new NotFoundException("Невозможно удалить дружбу: один из пользователей не найден.");
-        }
-        if (!checkFriendship(userId, friendId)) {
-            throw new OperationNotAllowedException("Невозможно удалить дружбу: пользователи не являются друзьями.");
         }
         userRepository.removeFriends(userId, friendId);
     }

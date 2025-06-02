@@ -53,9 +53,6 @@ public class DatabaseFilmService implements FilmService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("Пользователь с ID " + userId + " не найден");
         }
-        if (!filmRepository.isLikeExists(filmId, userId)) {
-            throw new OperationNotAllowedException("Лайк не найден, удаление невозможно");
-        }
         filmRepository.deleteLike(filmId, userId);
     }
 
@@ -65,7 +62,7 @@ public class DatabaseFilmService implements FilmService {
     }
 
     @Override
-    public List<Integer> findMostLikedFilms(int count) {
+    public List<Film> findMostLikedFilms(int count) {
         if (count <= 0) {
             throw new IllegalArgumentException("Параметр count должен быть положительным числом");
         }
