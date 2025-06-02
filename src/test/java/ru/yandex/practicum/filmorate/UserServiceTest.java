@@ -147,11 +147,6 @@ class UserServiceTest {
 
         userService.makeFriends(user1.getId(), user2.getId());
         userService.removeFriend(user1.getId(), user2.getId());
-        // закомментил из за тестов постмана
-        /*assertThrows(NotFoundException.class,
-                () -> userService.getUserFriends(user1.getId()));
-        assertThrows(NotFoundException.class,
-                () -> userService.getUserFriends(user2.getId()));*/
         assertEquals(0, userService.getUserFriends(user1.getId()).size());
         assertEquals(0, userService.getUserFriends(user2.getId()).size());
     }
@@ -230,16 +225,5 @@ class UserServiceTest {
         List<User> commonFriends = userService.getCommonFriends(u1.getId(), u2.getId());
         assertEquals(1, commonFriends.size());
         assertEquals(common.getId(), commonFriends.getFirst().getId());
-    }
-
-    @Test
-    void getCommonFriends_empty() {
-        User u1 = userService.createUser(User.builder()
-                .email("u1@yandex.ru").login("u1").build());
-        User u2 = userService.createUser(User.builder()
-                .email("u2@yandex.ru").login("u2").build());
-
-        assertThrows(NotFoundException.class,
-                () -> userService.getCommonFriends(u1.getId(), u2.getId()));
     }
 }

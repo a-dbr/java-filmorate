@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.EmailAlreadyExistsException;
@@ -11,12 +12,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 import ru.yandex.practicum.filmorate.service.interfaces.UserService;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class DatabaseUserService implements UserService {
@@ -49,24 +48,10 @@ public class DatabaseUserService implements UserService {
 
     @Override
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        if (userRepository.findById(userId).isEmpty() ||
-                userRepository.findById(otherUserId).isEmpty()) {
+        if (userRepository.findById(userId).isEmpty() || userRepository.findById(otherUserId).isEmpty()) {
             throw new NotFoundException("Невозможно получить общих друзей: один из пользователей не найден");
         }
-
-        List<User> userFriends = userRepository.getFriends(userId);
-        List<User> otherFriends = userRepository.getFriends(otherUserId);
-
-        Set<User> otherSet = new HashSet<>(otherFriends);
-        List<User> common = userFriends.stream()
-                .filter(otherSet::contains)
-                .collect(Collectors.toList());
-
-        if (common.isEmpty()) {
-            throw new NotFoundException("У пользователей нет общих друзей");
-        }
-
-        return common;
+        return userRepository.getCommonFriends(userId, otherUserId);
     }
 
     @Override
@@ -115,7 +100,7 @@ public class DatabaseUserService implements UserService {
             throw new OperationNotAllowedException("ID пользователей должны отличаться.");
         }
         if (!userRepository.existsById(userId) || !userRepository.existsById(friendId)) {
-            throw new NotFoundException("Невозможно удалить дружбу: один из пользователей не найден.");
+            throw new NotFoundException("Невозможно удалить из друзей: один из пользователей не найден.");
         }
         userRepository.removeFriends(userId, friendId);
     }

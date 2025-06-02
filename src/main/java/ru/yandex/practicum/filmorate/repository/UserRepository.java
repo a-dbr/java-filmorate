@@ -70,6 +70,17 @@ public class UserRepository {
         return jdbcTemplate.query(sql, userRowMapper, userId);
     }
 
+    public List<User> getCommonFriends(int userId1, int userId2) {
+        String sql = """
+        SELECT u.id, u.email, u.login, u.name, u.birthday
+        FROM users u
+        JOIN friends f1 ON u.id = f1.friend_id
+        JOIN friends f2 ON u.id = f2.friend_id
+        WHERE f1.user_id = ? AND f2.user_id = ?
+        """;
+        return jdbcTemplate.query(sql, userRowMapper, userId1, userId2);
+    }
+
     public void makeFriends(int userId, int friendId) {
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
