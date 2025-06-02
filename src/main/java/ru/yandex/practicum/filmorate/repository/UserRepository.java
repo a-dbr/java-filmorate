@@ -22,9 +22,19 @@ public class UserRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+
     public void deleteAll() {
-        String sql = "DELETE FROM users";
-        jdbcTemplate.update(sql);
+        String sql = """
+            DELETE FROM friends;
+            DELETE FROM users
+            """;
+        jdbcTemplate.batchUpdate(sql);
+    }
+
+    public boolean existsById(int userId) {
+        String sql = "SELECT COUNT(1) FROM users WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return count != null && count > 0;
     }
 
     public List<User> findAll() {
@@ -42,6 +52,23 @@ public class UserRepository {
         String sql = "SELECT id, email, login, name, birthday FROM users WHERE id = ?";
         List<User> results = jdbcTemplate.query(sql, userRowMapper, id);
         return results.stream().findFirst();
+    }
+
+    public List<Integer> getFriends(int userId) {
+        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
+        return jdbcTemplate.queryForList(sql, Integer.class, userId);
+    }
+
+    public void makeFriends(int userId, int friendId) {
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId);
+        jdbcTemplate.update(sql, friendId, userId);
+    }
+
+    public void removeFriends(int userId, int friendId) {
+        // Удаляем запись userId - friendId и запись friendId - userId
+        String sql = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
     }
 
     /**

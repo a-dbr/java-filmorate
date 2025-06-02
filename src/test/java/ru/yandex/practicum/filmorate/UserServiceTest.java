@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.EmailAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 import ru.yandex.practicum.filmorate.service.interfaces.UserService;
@@ -81,6 +82,109 @@ class UserServiceTest {
 
         List<User> all = userService.getAllUsers();
         assertEquals(2, all.size());
+    }
+
+    @Test
+    void makeFriends() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+
+        userService.makeFriends(user1.getId(), user2.getId());
+        List<Integer> firstUserFriends = userService.getUserFriends(user1.getId());
+        List<Integer> secondUserFriends = userService.getUserFriends(user2.getId());
+
+        assertEquals(firstUserFriends.size(), secondUserFriends.size());
+        assertTrue(firstUserFriends.contains(user2.getId()));
+        assertTrue(secondUserFriends.contains(user1.getId()));
+    }
+
+    @Test
+    void makeFriendsWithWrongId() {
+        User user = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+
+        assertThrows(NotFoundException.class,
+                () -> userService.makeFriends(user.getId(), 9999));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.makeFriends(-1, 0));
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.makeFriends(9999, 9999));
+    }
+
+    @Test
+    void makeFriendsTwice() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+        userService.makeFriends(user1.getId(), user2.getId());
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.makeFriends(user1.getId(), user2.getId()));
+    }
+
+    @Test
+    void deleteFriend() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+
+        userService.makeFriends(user1.getId(), user2.getId());
+        userService.removeFriend(user1.getId(), user2.getId());
+        List<Integer> firstUserFriends = userService.getUserFriends(user1.getId());
+        List<Integer> secondUserFriends = userService.getUserFriends(user2.getId());
+
+        assertTrue(firstUserFriends.isEmpty());
+        assertTrue(secondUserFriends.isEmpty());
+
+    }
+
+    @Test
+    void deleteFriendWithWrongId() {
+        User user = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+
+        assertThrows(NotFoundException.class,
+                () -> userService.removeFriend(user.getId(), 9999));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.removeFriend(-1, 0));
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.removeFriend(9999, 9999));
+    }
+
+    @Test
+    void deleteFriendTwice() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+        userService.makeFriends(user1.getId(), user2.getId());
+        userService.removeFriend(user1.getId(), user2.getId());
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.removeFriend(user1.getId(), user2.getId())
+        );
     }
 
     @Test

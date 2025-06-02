@@ -17,15 +17,22 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<Map<String,String>> handleEmailAlreadyExistsException(final EmailAlreadyExistsException e) {
+    public ResponseEntity<Map<String,String>> handleEmailAlreadyExists(final EmailAlreadyExistsException e) {
         log.error("EmailAlreadyExistsException: {}", e.getMessage());
         Map<String,String> body = Collections.singletonMap("error", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(InvalidJsonFieldException.class)
-    public ResponseEntity<Map<String,String>> handleInvalidJsonFieldException(final InvalidJsonFieldException e) {
+    public ResponseEntity<Map<String,String>> handleInvalidJsonField(final InvalidJsonFieldException e) {
         log.error("InvalidJsonFieldException: {} ", e.getMessage());
+        Map<String,String> body = Collections.singletonMap("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String,String>> handleIllegalArgument(final IllegalArgumentException e) {
+        log.error("IllegalArgumentException: {} ", e.getMessage());
         Map<String,String> body = Collections.singletonMap("error", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
@@ -37,9 +44,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    @ExceptionHandler(OperationNotAllowedException.class)
+    public ResponseEntity<Map<String,String>> handleOperationNotAllowed(final OperationNotAllowedException e) {
+        log.error("OperationNotAllowedException: {}", e.getMessage());
+        Map<String,String> body = Collections.singletonMap("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     // Обработка ошибок валидации
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, List<String>>> handleValidationException(final MethodArgumentNotValidException e) {
+    public ResponseEntity<Map<String, List<String>>> handleValidation(final MethodArgumentNotValidException e) {
         // Собираем все сообщения ошибок валидации
         List<String> errors = e.getBindingResult()
                 .getAllErrors().stream()

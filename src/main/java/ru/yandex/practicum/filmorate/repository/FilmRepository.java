@@ -22,9 +22,20 @@ public class FilmRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public void addLike(int filmId, int userId) {
+        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, filmId, userId);
+
+    }
+
     public void deleteAll() {
         String sql = "DELETE FROM films";
         jdbcTemplate.update(sql);
+    }
+
+    public void deleteLike(int filmId, int userId) {
+        String sql = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, filmId, userId);
     }
 
     public List<Film> findAll() {
@@ -37,6 +48,25 @@ public class FilmRepository {
         List<Film> results = jdbcTemplate.query(sql, filmRowMapper, id);
         return results.stream().findFirst();
     }
+
+    public List<Integer> findMostLikedFilms(int count) {
+        String sql = """
+                SELECT f.id
+                FROM films f
+                LEFT JOIN likes l ON f.id = l.film_id
+                GROUP BY f.id
+                ORDER BY COUNT(l.user_id) DESC
+                LIMIT ?
+                """;
+
+        return jdbcTemplate.queryForList(sql, Integer.class, count);
+    }
+
+    public boolean isLikeExists(int filmId, int userId) {
+        String sql = "SELECT EXISTS (SELECT 1 FROM likes WHERE film_id = ? AND user_id = ?)";
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sql, Boolean.class, filmId, userId));
+    }
+
 
     /**
      * Метод сохранения фильма.

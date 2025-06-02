@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
 import ru.yandex.practicum.filmorate.service.interfaces.FilmService;
 
 import java.util.List;
@@ -15,6 +17,23 @@ import java.util.List;
 @AllArgsConstructor
 public class DatabaseFilmService implements FilmService {
     FilmRepository filmRepository;
+    UserRepository userRepository;
+
+    @Override
+    @Transactional
+    public void addLike(int filmId, int userId) {
+        if (filmRepository.findById(filmId).isEmpty()) {
+            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
+        }
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
+        if (!filmRepository.isLikeExists(filmId, userId)) {
+            filmRepository.addLike(filmId, userId);
+        } else {
+            throw new OperationNotAllowedException("Лайк уже установлен!");
+        }
+    }
 
     @Override
     @Transactional
@@ -26,8 +45,31 @@ public class DatabaseFilmService implements FilmService {
     }
 
     @Override
+    @Transactional
+    public void deleteLike(int filmId, int userId) {
+        if (filmRepository.findById(filmId).isEmpty()) {
+            throw new NotFoundException("Фильм с ID " + filmId + " не найден");
+        }
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new NotFoundException("Пользователь с ID " + userId + " не найден");
+        }
+        if (!filmRepository.isLikeExists(filmId, userId)) {
+            throw new OperationNotAllowedException("Лайк не найден, удаление невозможно");
+        }
+        filmRepository.deleteLike(filmId, userId);
+    }
+
+    @Override
     public List<Film> getAllFilms() {
         return filmRepository.findAll();
+    }
+
+    @Override
+    public List<Integer> findMostLikedFilms(int count) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("Параметр count должен быть положительным числом");
+        }
+        return filmRepository.findMostLikedFilms(count);
     }
 
     @Override
