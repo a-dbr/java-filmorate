@@ -22,9 +22,25 @@ public class UserRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+
+    public boolean existsFriendship(int userId, int friendId) {
+        String sql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
+        return count != null && count > 0;
+    }
+
     public void deleteAll() {
-        String sql = "DELETE FROM users";
-        jdbcTemplate.update(sql);
+        String sql = """
+            DELETE FROM friends;
+            DELETE FROM users
+            """;
+        jdbcTemplate.batchUpdate(sql);
+    }
+
+    public boolean existsById(int userId) {
+        String sql = "SELECT COUNT(1) FROM users WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
+        return count != null && count > 0;
     }
 
     public List<User> findAll() {
@@ -42,6 +58,39 @@ public class UserRepository {
         String sql = "SELECT id, email, login, name, birthday FROM users WHERE id = ?";
         List<User> results = jdbcTemplate.query(sql, userRowMapper, id);
         return results.stream().findFirst();
+    }
+
+    public List<User> getFriends(int userId) {
+        String sql = """
+        SELECT u.*
+        FROM friends f
+        JOIN users u ON f.friend_id = u.id
+        WHERE f.user_id = ?
+        """;
+        return jdbcTemplate.query(sql, userRowMapper, userId);
+    }
+
+    public List<User> getCommonFriends(int userId1, int userId2) {
+        String sql = """
+        SELECT u.id, u.email, u.login, u.name, u.birthday
+        FROM users u
+        JOIN friends f1 ON u.id = f1.friend_id
+        JOIN friends f2 ON u.id = f2.friend_id
+        WHERE f1.user_id = ? AND f2.user_id = ?
+        """;
+        return jdbcTemplate.query(sql, userRowMapper, userId1, userId2);
+    }
+
+    public void makeFriends(int userId, int friendId) {
+        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId);
+        jdbcTemplate.update(sql, friendId, userId);
+    }
+
+    public void removeFriends(int userId, int friendId) {
+        // Удаляем запись userId - friendId и запись friendId - userId
+        String sql = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        jdbcTemplate.update(sql, userId, friendId, friendId, userId);
     }
 
     /**

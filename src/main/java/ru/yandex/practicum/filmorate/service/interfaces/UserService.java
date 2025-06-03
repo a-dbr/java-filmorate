@@ -10,5 +10,15 @@ public interface UserService {
 
     List<User> getAllUsers();
 
+    List<User> getCommonFriends(int userId, int otherUserId);
+
+    User getUserById(int id);
+
+    List<User> getUserFriends(int id);
+
+    void makeFriends(int userId, int friendId);
+
+    void removeFriend(int userId, int friendId);
+
     User updateUser(User user);
 }

@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.EmailAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 import ru.yandex.practicum.filmorate.service.interfaces.UserService;
@@ -84,6 +85,88 @@ class UserServiceTest {
     }
 
     @Test
+    void makeFriends() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+
+        userService.makeFriends(user1.getId(), user2.getId());
+        List<User> firstUserFriends = userService.getUserFriends(user1.getId());
+        List<User> secondUserFriends = userService.getUserFriends(user2.getId());
+
+        assertEquals(firstUserFriends.size(), secondUserFriends.size());
+        assertTrue(firstUserFriends.contains(user2));
+        assertTrue(secondUserFriends.contains(user1));
+    }
+
+    @Test
+    void makeFriendsWithWrongId() {
+        User user = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+
+        assertThrows(NotFoundException.class,
+                () -> userService.makeFriends(user.getId(), 9999));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.makeFriends(-1, 0));
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.makeFriends(9999, 9999));
+    }
+
+    @Test
+    void makeFriendsTwice() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+        userService.makeFriends(user1.getId(), user2.getId());
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.makeFriends(user1.getId(), user2.getId()));
+    }
+
+    @Test
+    void deleteFriend() {
+        User user1 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+        User user2 = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@ukupnik.ru").login("u2").name("U2")
+                .build());
+
+        userService.makeFriends(user1.getId(), user2.getId());
+        userService.removeFriend(user1.getId(), user2.getId());
+        assertEquals(0, userService.getUserFriends(user1.getId()).size());
+        assertEquals(0, userService.getUserFriends(user2.getId()).size());
+    }
+
+    @Test
+    void deleteFriendWithWrongId() {
+        User user = userService.createUser(User.builder()
+                .id(0)
+                .email("r-kadiy@yandex.ru").login("u1").name("U1")
+                .build());
+
+        assertThrows(NotFoundException.class,
+                () -> userService.removeFriend(user.getId(), 9999));
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.removeFriend(-1, 0));
+        assertThrows(OperationNotAllowedException.class,
+                () -> userService.removeFriend(9999, 9999));
+    }
+
+    @Test
     void updateUser() {
         User orig = userService.createUser(User.builder()
                 .id(0)
@@ -126,5 +209,21 @@ class UserServiceTest {
         assertThrows(EmailAlreadyExistsException.class,
                 () -> userService.createUser(second));
     }
-}
 
+    @Test
+    void getCommonFriends() {
+        User u1 = userService.createUser(User.builder()
+                .email("u1@yandex.ru").login("u1").build());
+        User u2 = userService.createUser(User.builder()
+                .email("u2@yandex.ru").login("u2").build());
+        User common = userService.createUser(User.builder()
+                .email("common@yandex.ru").login("common").build());
+
+        userService.makeFriends(u1.getId(), common.getId());
+        userService.makeFriends(u2.getId(), common.getId());
+
+        List<User> commonFriends = userService.getCommonFriends(u1.getId(), u2.getId());
+        assertEquals(1, commonFriends.size());
+        assertEquals(common.getId(), commonFriends.getFirst().getId());
+    }
+}
