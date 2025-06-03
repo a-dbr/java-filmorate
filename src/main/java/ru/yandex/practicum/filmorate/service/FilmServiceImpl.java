@@ -15,9 +15,9 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class DatabaseFilmService implements FilmService {
-    FilmRepository filmRepository;
-    UserRepository userRepository;
+public class FilmServiceImpl implements FilmService {
+    private final FilmRepository filmRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional

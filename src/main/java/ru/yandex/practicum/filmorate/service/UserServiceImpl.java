@@ -18,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class DatabaseUserService implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
