@@ -24,6 +24,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void confirmFriendship(int userId, int friendId) {
+        if (userRepository.findById(userId).isEmpty() || userRepository.findById(friendId).isEmpty()) {
+            throw new NotFoundException("Невозможно подтвердить запрос: один из пользователей не найден");
+        }
+        if (!userRepository.getFriends(userId).contains(getUserById(friendId))) {
+            throw new OperationNotAllowedException("Пользователи не являются друзьями");
+        }
+        if (userRepository.isValidFriendRequest(userId, friendId)) {
+            throw new NotFoundException("Не найден запрос от указанного пользователя: " + friendId);
+        }
+
+        userRepository.confirmFriendship(userId, friendId);
+    }
+
+    @Override
+    @Transactional
     public User createUser(User user) {
         Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
         if (user.getId() != 0) {

@@ -226,4 +226,28 @@ class UserServiceTest {
         assertEquals(1, commonFriends.size());
         assertEquals(common.getId(), commonFriends.getFirst().getId());
     }
+
+    @Test
+    void existFriendship(){
+        User u1 = userService.createUser(User.builder()
+                .email("u1@yandex.ru").login("u1").build());
+        User u2 = userService.createUser(User.builder()
+                .email("u2@yandex.ru").login("u2").build());
+        userService.makeFriends(u1.getId(), u2.getId());
+        assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
+        userService.removeFriend(u1.getId(), u2.getId());
+        userService.makeFriends(u2.getId(), u1.getId());
+        assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
+    }
+
+    @Test
+    void isValidFriendRequest() {
+        User u1 = userService.createUser(User.builder()
+                .email("u1@yandex.ru").login("u1").build());
+        User u2 = userService.createUser(User.builder()
+                .email("u2@yandex.ru").login("u2").build());
+        userService.makeFriends(u1.getId(), u2.getId());
+        assertTrue(userRepository.isValidFriendRequest(u2.getId(), u1.getId()));
+        assertFalse(userRepository.isValidFriendRequest(u1.getId(), u2.getId()));
+    }
 }

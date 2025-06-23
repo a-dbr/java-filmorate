@@ -34,11 +34,13 @@ class FilmServiceTest {
     @BeforeEach
     void beforeEach() {
         filmRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @AfterEach
     void afterEach() {
         filmRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -49,6 +51,7 @@ class FilmServiceTest {
                 .description("Очередной гудящий фильм Вильнева")
                 .releaseDate(LocalDate.of(2021, 10, 22))
                 .duration(2000)
+                .contentRatingId(3)
                 .build();
 
         Film created = filmService.createFilm(input);
@@ -66,6 +69,7 @@ class FilmServiceTest {
                 .description("Легендарный фильм с невыносимо талантливым племянником в главной роли")
                 .releaseDate(LocalDate.now())
                 .duration(100)
+                .contentRatingId(3)
                 .build();
 
         assertThrows(InvalidJsonFieldException.class,
@@ -80,12 +84,14 @@ class FilmServiceTest {
                 .name("A")
                 .description("d")
                 .releaseDate(LocalDate.now())
+                .contentRatingId(1)
                 .duration(90).build());
         filmService.createFilm(Film.builder()
                 .id(0)
                 .name("B")
                 .description("d")
                 .releaseDate(LocalDate.now())
+                .contentRatingId(1)
                 .duration(100).build());
 
         List<Film> all = filmService.getAllFilms();
@@ -98,6 +104,7 @@ class FilmServiceTest {
                 .id(0)
                 .name("Orig")
                 .description("d")
+                .contentRatingId(1)
                 .releaseDate(LocalDate.now()).duration(120).build());
         Film modified = orig.toBuilder().name("Updated").build();
 
@@ -113,7 +120,10 @@ class FilmServiceTest {
         Film non = Film.builder()
                 .id(9999)
                 .name("X").description("d")
-                .releaseDate(LocalDate.now()).duration(90).build();
+                .releaseDate(LocalDate.now())
+                .duration(90)
+                .contentRatingId(1)
+                .build();
 
         assertThrows(NotFoundException.class,
                 () -> filmService.updateFilm(non));
@@ -137,6 +147,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
+                .contentRatingId(1)
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -167,6 +178,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
+                .contentRatingId(1)
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -191,6 +203,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
+                .contentRatingId(1)
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -216,6 +229,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
+                .contentRatingId(1)
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -251,6 +265,7 @@ class FilmServiceTest {
                 .description("d1")
                 .releaseDate(LocalDate.of(2001, 1, 1))
                 .duration(100)
+                .contentRatingId(1)
                 .build());
         Film film2 = filmRepository.save(Film.builder()
                 .id(0)
@@ -258,6 +273,7 @@ class FilmServiceTest {
                 .description("d2")
                 .releaseDate(LocalDate.of(2002, 2, 2))
                 .duration(110)
+                .contentRatingId(1)
                 .build());
 
         // film1 получает 2 лайка, film2 — 1 лайк

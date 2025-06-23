@@ -16,10 +16,11 @@ import java.util.Optional;
 public class FilmRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<Film> filmRowMapper = new FilmMapper();
+    private final RowMapper<Film> filmRowMapper;
 
     public FilmRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        filmRowMapper = new FilmMapper(jdbcTemplate);
     }
 
     public void addLike(int filmId, int userId) {
@@ -39,12 +40,12 @@ public class FilmRepository {
     }
 
     public List<Film> findAll() {
-        String sql = "SELECT id, name, description, release_date, duration FROM films";
+        String sql = "SELECT * FROM films";
         return jdbcTemplate.query(sql, filmRowMapper);
     }
 
     public Optional<Film> findById(int id) {
-        String sql = "SELECT id, name, description, release_date, duration FROM films WHERE id = ?";
+        String sql = "SELECT * FROM films WHERE id = ?";
         List<Film> results = jdbcTemplate.query(sql, filmRowMapper, id);
         return results.stream().findFirst();
     }
@@ -58,7 +59,6 @@ public class FilmRepository {
         ORDER BY COUNT(l.user_id) DESC
         LIMIT ?
         """;
-
         return jdbcTemplate.query(sql, filmRowMapper, count);
     }
 
@@ -83,7 +83,8 @@ public class FilmRepository {
     }
 
     private Film insert(Film film) {
-        String sql = "INSERT INTO films (name, description, release_date, duration) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO films (name, description, release_date, duration, content_rating_id) " +
+                "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
@@ -91,6 +92,7 @@ public class FilmRepository {
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
+            ps.setInt(5, film.getContentRatingId());
             return ps;
         }, keyHolder);
         // используем KeyHolder для присвоения фильму id.
@@ -98,9 +100,10 @@ public class FilmRepository {
     }
 
     private void update(Film film) {
-        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ? WHERE id = ?";
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
+                "content_rating_id = ? WHERE id = ?";
         jdbcTemplate.update(sql, film.getName(), film.getDescription(),
-                film.getReleaseDate(), film.getDuration(), film.getId());
+                film.getReleaseDate(), film.getDuration(), film.getContentRatingId(), film.getId());
     }
 }
 

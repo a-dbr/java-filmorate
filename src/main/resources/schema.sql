@@ -1,18 +1,26 @@
 CREATE TABLE users
 (
     id       INT PRIMARY KEY AUTO_INCREMENT,
-    email    VARCHAR(255) NOT NULL,
-    login    VARCHAR(100) NOT NULL,
+    email    VARCHAR(255) NOT NULL UNIQUE,
+    login    VARCHAR(100) NOT NULL UNIQUE,
     name     VARCHAR(255),
     birthday DATE
 );
 
 CREATE TABLE friends
 (
-    user_id   INT,
-    friend_id INT,
-    FOREIGN KEY (user_id) REFERENCES users (id),
-    FOREIGN KEY (friend_id) REFERENCES users (id)
+    user1_id INT,
+    user2_id INT,
+    is_confirmed BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (user1_id, user2_id),
+    FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE content_rating
+(
+    id INT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE films
@@ -21,7 +29,9 @@ CREATE TABLE films
     name         VARCHAR(255) NOT NULL,
     description  TEXT,
     release_date DATE,
-    duration     INT          NOT NULL
+    duration     INT NOT NULL,
+    content_rating_id INT,
+    FOREIGN KEY (content_rating_id) REFERENCES content_rating(id) ON DELETE CASCADE
 );
 
 CREATE TABLE likes
@@ -31,4 +41,18 @@ CREATE TABLE likes
     PRIMARY KEY (film_id, user_id),
     FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE genres (
+    id   INT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE film_genres
+(
+    film_id INT,
+    genre_id INT,
+    PRIMARY KEY (film_id, genre_id),
+    FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE
 );

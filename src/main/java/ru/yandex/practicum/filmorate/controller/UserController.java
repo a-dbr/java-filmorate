@@ -47,6 +47,12 @@ public class UserController {
         userService.makeFriends(id, friendId);
     }
 
+    @PutMapping("/{id}/friends/{friendId}/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void confirmFriendship(@PathVariable int id, @PathVariable int friendId) {
+        userService.confirmFriendship(id, friendId);
+    }
+
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeFriend(@PathVariable int id, @PathVariable int friendId) {
