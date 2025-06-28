@@ -16,17 +16,17 @@ import java.util.Optional;
 public class UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<User> userRowMapper = new UserMapper();
 
     public UserRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    private final RowMapper<User> userRowMapper = new UserMapper();
 
-    public boolean existsFriendship(int userId, int friendId) {
-        String sql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
-        return count != null && count > 0;
+    public void confirmFriendship(int userId, int friendId) {
+        String sql = "UPDATE friends SET `is_confirmed` = ? WHERE `user_id` = ? AND `friend_id` = ?";
+        jdbcTemplate.update(sql, true, userId, friendId);
+        jdbcTemplate.update(sql, true, friendId, userId);
     }
 
     public void deleteAll() {
@@ -37,6 +37,14 @@ public class UserRepository {
         jdbcTemplate.batchUpdate(sql);
     }
 
+    public boolean existsFriendship(int userId, int friendId) {
+        String sql = """
+                SELECT COUNT(*) FROM friends WHERE (user1_id = ? AND user2_id = ?) OR (user2_id = ? AND user1_id = ?)
+                """;
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId, userId, friendId);
+        return count != null && count > 0;
+    }
+
     public boolean existsById(int userId) {
         String sql = "SELECT COUNT(1) FROM users WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
@@ -44,18 +52,18 @@ public class UserRepository {
     }
 
     public List<User> findAll() {
-        String sql = "SELECT id, email, login, name, birthday FROM users";
+        String sql = "SELECT * FROM users";
         return jdbcTemplate.query(sql, userRowMapper);
     }
 
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT id, email, login, name, birthday FROM users WHERE email = ?";
+        String sql = "SELECT * FROM users WHERE email = ?";
         List<User> results = jdbcTemplate.query(sql, userRowMapper, email);
         return results.stream().findFirst();
     }
 
     public Optional<User> findById(int id) {
-        String sql = "SELECT id, email, login, name, birthday FROM users WHERE id = ?";
+        String sql = "SELECT * FROM users WHERE id = ?";
         List<User> results = jdbcTemplate.query(sql, userRowMapper, id);
         return results.stream().findFirst();
     }
@@ -64,32 +72,40 @@ public class UserRepository {
         String sql = """
         SELECT u.*
         FROM friends f
-        JOIN users u ON f.friend_id = u.id
-        WHERE f.user_id = ?
+        JOIN users u ON (f.user1_id = ? AND u.id = f.user2_id) OR (f.user2_id = ? AND u.id = f.user1_id)
         """;
-        return jdbcTemplate.query(sql, userRowMapper, userId);
+
+        return jdbcTemplate.query(sql, userRowMapper, userId, userId);
     }
 
     public List<User> getCommonFriends(int userId1, int userId2) {
         String sql = """
-        SELECT u.id, u.email, u.login, u.name, u.birthday
-        FROM users u
-        JOIN friends f1 ON u.id = f1.friend_id
-        JOIN friends f2 ON u.id = f2.friend_id
-        WHERE f1.user_id = ? AND f2.user_id = ?
+        SELECT u.* FROM users u
+        JOIN friends f1 ON (
+            f1.user1_id = ? AND u.id = f1.user2_id) OR (f1.user2_id = ? AND u.id = f1.user1_id)
+        JOIN friends f2 ON
+            (f2.user1_id = ? AND u.id = f2.user2_id) OR (f2.user2_id = ? AND u.id = f2.user1_id)
         """;
-        return jdbcTemplate.query(sql, userRowMapper, userId1, userId2);
+        return jdbcTemplate.query(sql, userRowMapper, userId1, userId2, userId2, userId1);
+    }
+
+    public boolean isValidFriendRequest(int userId, int friendId) {
+        // Проверяем, что именно friendId отправлял запрос
+        String sql = "SELECT user1_id FROM friends WHERE user1_id = ? AND user2_id = ?";
+        List<Integer> results = jdbcTemplate.query(sql,
+                (rs, rowNum) -> rs.getInt("user1_id"),
+                friendId, userId
+        );
+        return !results.isEmpty();
     }
 
     public void makeFriends(int userId, int friendId) {
-        String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
+        String sql = "INSERT INTO friends (user1_id, user2_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
-        jdbcTemplate.update(sql, friendId, userId);
     }
 
     public void removeFriends(int userId, int friendId) {
-        // Удаляем запись userId - friendId и запись friendId - userId
-        String sql = "DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";
+        String sql = "DELETE FROM friends WHERE (user1_id = ? AND user2_id = ?) OR (user2_id = ? AND user1_id = ?)";
         jdbcTemplate.update(sql, userId, friendId, friendId, userId);
     }
 

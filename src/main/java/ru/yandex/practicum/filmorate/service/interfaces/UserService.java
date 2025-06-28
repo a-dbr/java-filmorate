@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface UserService {
 
+    void confirmFriendship(int userId, int friendId);
+
     User createUser(User user);
 
     List<User> getAllUsers();
