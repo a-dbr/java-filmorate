@@ -93,9 +93,7 @@ public class UserServiceImpl implements UserService {
         // проверяем, есть ли неподтвержденный запрос от friendId к userId
         if (userRepository.isValidFriendRequest(friendId, userId)) {
             userRepository.confirmFriendship(userId, friendId);
-        }
-        // Если запроса нет - создаем новый
-        else if (!userRepository.isValidFriendRequest(userId, friendId)) {
+        } else if (!userRepository.isValidFriendRequest(userId, friendId)) { // Если запроса нет - создаем новый
             userRepository.makeFriends(userId, friendId, false);
         }
     }
