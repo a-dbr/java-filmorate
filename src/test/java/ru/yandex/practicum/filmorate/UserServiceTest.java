@@ -234,7 +234,7 @@ class UserServiceTest {
     }
 
     @Test
-    void existFriendship(){
+    void existFriendship() {
         User u1 = userService.createUser(User.builder()
                 .email("u1@yandex.ru").login("u1").build());
         User u2 = userService.createUser(User.builder()
