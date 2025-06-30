@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id       INT PRIMARY KEY AUTO_INCREMENT,
     email    VARCHAR(255) NOT NULL UNIQUE,
@@ -7,7 +7,7 @@ CREATE TABLE users
     birthday DATE
 );
 
-CREATE TABLE friends
+CREATE TABLE IF NOT EXISTS friends
 (
     user1_id INT,
     user2_id INT,
@@ -17,13 +17,13 @@ CREATE TABLE friends
     FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE content_rating
+CREATE TABLE IF NOT EXISTS content_rating
 (
     id INT PRIMARY KEY,
     name VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE films
+CREATE TABLE IF NOT EXISTS films
 (
     id           INT PRIMARY KEY AUTO_INCREMENT,
     name         VARCHAR(255) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE films
     FOREIGN KEY (content_rating_id) REFERENCES content_rating(id) ON DELETE CASCADE
 );
 
-CREATE TABLE likes
+CREATE TABLE IF NOT EXISTS likes
 (
     film_id INT NOT NULL,
     user_id INT NOT NULL,
@@ -43,12 +43,12 @@ CREATE TABLE likes
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE genres (
+CREATE TABLE IF NOT EXISTS genres (
     id   INT PRIMARY KEY,
     name VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE film_genres
+CREATE TABLE IF NOT EXISTS film_genres
 (
     film_id INT,
     genre_id INT,

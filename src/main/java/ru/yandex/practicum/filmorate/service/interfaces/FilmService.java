@@ -17,5 +17,7 @@ public interface FilmService {
 
     List<Film> getAllFilms();
 
+    Film getFilmById(int filmId);
+
     Film updateFilm(Film film);
 }

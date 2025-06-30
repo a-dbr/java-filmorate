@@ -15,6 +15,11 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable int id) {
+        return filmService.getFilmById(id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void addLike(@PathVariable int id, @PathVariable int userId) {

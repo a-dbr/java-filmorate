@@ -1,5 +1,6 @@
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.impl;
 
+import lombok.RequiredArgsConstructor;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,21 +8,20 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.repository.interfaces.FilmRepository;
 
 import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class FilmRepository {
+@RequiredArgsConstructor
+public class FilmRepositoryImpl implements FilmRepository {
 
     private final JdbcTemplate jdbcTemplate;
     private final RowMapper<Film> filmRowMapper;
-
-    public FilmRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        filmRowMapper = new FilmMapper(jdbcTemplate);
-    }
 
     public void addLike(int filmId, int userId) {
         String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
@@ -52,13 +52,13 @@ public class FilmRepository {
 
     public List<Film> findMostLikedFilms(int count) {
         String sql = """
-        SELECT f.*
-        FROM films f
-        LEFT JOIN likes l ON f.id = l.film_id
-        GROUP BY f.id
-        ORDER BY COUNT(l.user_id) DESC
-        LIMIT ?
-        """;
+                SELECT f.*
+                FROM films f
+                LEFT JOIN likes l ON f.id = l.film_id
+                GROUP BY f.id
+                ORDER BY COUNT(l.user_id) DESC
+                LIMIT ?
+                """;
         return jdbcTemplate.query(sql, filmRowMapper, count);
     }
 
@@ -92,18 +92,56 @@ public class FilmRepository {
             ps.setString(2, film.getDescription());
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
-            ps.setInt(5, film.getContentRatingId());
+            if (film.getMpa() != null) {
+                ps.setInt(5, film.getMpa().getId());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
             return ps;
         }, keyHolder);
         // используем KeyHolder для присвоения фильму id.
-        return film.toBuilder().id(keyHolder.getKey().intValue()).build();
+        Film saved = film.toBuilder().id(keyHolder.getKey().intValue()).build();
+        saveGenres(saved);
+        return saved;
     }
 
     private void update(Film film) {
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, " +
                 "content_rating_id = ? WHERE id = ?";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(),
-                film.getReleaseDate(), film.getDuration(), film.getContentRatingId(), film.getId());
+        jdbcTemplate.update(
+                sql,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa() != null
+                        ? film.getMpa().getId()
+                        : null,
+                film.getId());
+        saveGenres(film);
+    }
+
+    // сохраняем жанры
+    private void saveGenres(Film film) {
+
+        // получаем все допустимые genre_id
+        List<Integer> validGenreIds = jdbcTemplate.queryForList(
+                "SELECT id FROM genres",
+                Integer.class
+        );
+
+        // Вставляем только те жанры, которые действительно есть в таблице genres
+        if (film.getGenres() != null) {
+            for (Genre g : film.getGenres()) {
+                int genreId = g.getId();
+                if (validGenreIds.contains(genreId)) {
+                    jdbcTemplate.update(
+                            "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
+                            film.getId(), genreId
+                    );
+                }
+            }
+        }
     }
 }
 

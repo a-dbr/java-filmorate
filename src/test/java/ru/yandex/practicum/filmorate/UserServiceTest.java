@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.repository.interfaces.UserRepository;
 import ru.yandex.practicum.filmorate.service.interfaces.UserService;
 
 import java.time.LocalDate;
@@ -99,7 +99,13 @@ class UserServiceTest {
         List<User> firstUserFriends = userService.getUserFriends(user1.getId());
         List<User> secondUserFriends = userService.getUserFriends(user2.getId());
 
-        assertEquals(firstUserFriends.size(), secondUserFriends.size());
+        assertEquals(1, firstUserFriends.size());
+        assertEquals(0, secondUserFriends.size());
+
+        userService.confirmFriendship(user2.getId(), user1.getId());
+
+        firstUserFriends = userService.getUserFriends(user1.getId());
+        secondUserFriends = userService.getUserFriends(user2.getId());
         assertTrue(firstUserFriends.contains(user2));
         assertTrue(secondUserFriends.contains(user1));
     }
@@ -234,10 +240,9 @@ class UserServiceTest {
         User u2 = userService.createUser(User.builder()
                 .email("u2@yandex.ru").login("u2").build());
         userService.makeFriends(u1.getId(), u2.getId());
-        assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
-        userService.removeFriend(u1.getId(), u2.getId());
         userService.makeFriends(u2.getId(), u1.getId());
         assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
+        assertTrue(userRepository.existsFriendship(u2.getId(), u1.getId()));
     }
 
     @Test
@@ -247,7 +252,7 @@ class UserServiceTest {
         User u2 = userService.createUser(User.builder()
                 .email("u2@yandex.ru").login("u2").build());
         userService.makeFriends(u1.getId(), u2.getId());
-        assertTrue(userRepository.isValidFriendRequest(u2.getId(), u1.getId()));
-        assertFalse(userRepository.isValidFriendRequest(u1.getId(), u2.getId()));
+        assertTrue(userRepository.isValidFriendRequest(u1.getId(), u2.getId()));
+        assertFalse(userRepository.isValidFriendRequest(u2.getId(), u1.getId()));
     }
 }

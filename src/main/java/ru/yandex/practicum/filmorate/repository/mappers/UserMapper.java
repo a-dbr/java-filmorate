@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 @Component
 public class UserMapper implements RowMapper<User> {
     @Override
-    public User mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public User mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         return User.builder()
                 .id(rs.getInt("id"))
                 .email(rs.getString("email"))
