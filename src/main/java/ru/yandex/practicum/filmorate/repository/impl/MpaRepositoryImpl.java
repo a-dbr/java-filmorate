@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.repository.interfaces.MpaRepository;
+import ru.yandex.practicum.filmorate.repository.MpaRepository;
 
 import java.util.List;
 import java.util.Optional;

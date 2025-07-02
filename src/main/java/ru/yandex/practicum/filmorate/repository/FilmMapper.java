@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.repository.mappers;
+package ru.yandex.practicum.filmorate.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.repository.interfaces.GenreRepository;
-import ru.yandex.practicum.filmorate.repository.interfaces.MpaRepository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

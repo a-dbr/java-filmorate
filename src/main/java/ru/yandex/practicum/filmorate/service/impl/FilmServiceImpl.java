@@ -9,11 +9,11 @@ import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.repository.interfaces.FilmRepository;
-import ru.yandex.practicum.filmorate.repository.interfaces.GenreRepository;
-import ru.yandex.practicum.filmorate.repository.interfaces.MpaRepository;
-import ru.yandex.practicum.filmorate.repository.interfaces.UserRepository;
-import ru.yandex.practicum.filmorate.service.interfaces.FilmService;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.repository.MpaRepository;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 import java.util.Optional;

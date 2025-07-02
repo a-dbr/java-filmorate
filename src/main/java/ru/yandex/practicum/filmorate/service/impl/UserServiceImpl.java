@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.interfaces.UserRepository;
-import ru.yandex.practicum.filmorate.service.interfaces.UserService;
+import ru.yandex.practicum.filmorate.repository.UserRepository;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.List;
 

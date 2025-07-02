@@ -9,7 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.interfaces.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
 
 import java.sql.PreparedStatement;
 import java.sql.Types;
