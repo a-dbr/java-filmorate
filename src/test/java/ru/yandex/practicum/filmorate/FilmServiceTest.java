@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -11,8 +12,9 @@ import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.MpaRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
-import ru.yandex.practicum.filmorate.service.interfaces.FilmService;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = FilmorateApplication.class)
+@AutoConfigureTestDatabase
 class FilmServiceTest {
 
     @Autowired
@@ -30,6 +33,9 @@ class FilmServiceTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private MpaRepository mpaRepository;
 
     @BeforeEach
     void beforeEach() {
@@ -51,7 +57,7 @@ class FilmServiceTest {
                 .description("Очередной гудящий фильм Вильнева")
                 .releaseDate(LocalDate.of(2021, 10, 22))
                 .duration(2000)
-                .contentRatingId(3)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build();
 
         Film created = filmService.createFilm(input);
@@ -69,7 +75,6 @@ class FilmServiceTest {
                 .description("Легендарный фильм с невыносимо талантливым племянником в главной роли")
                 .releaseDate(LocalDate.now())
                 .duration(100)
-                .contentRatingId(3)
                 .build();
 
         assertThrows(InvalidJsonFieldException.class,
@@ -84,14 +89,14 @@ class FilmServiceTest {
                 .name("A")
                 .description("d")
                 .releaseDate(LocalDate.now())
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .duration(90).build());
         filmService.createFilm(Film.builder()
                 .id(0)
                 .name("B")
                 .description("d")
                 .releaseDate(LocalDate.now())
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .duration(100).build());
 
         List<Film> all = filmService.getAllFilms();
@@ -104,7 +109,7 @@ class FilmServiceTest {
                 .id(0)
                 .name("Orig")
                 .description("d")
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .releaseDate(LocalDate.now()).duration(120).build());
         Film modified = orig.toBuilder().name("Updated").build();
 
@@ -122,7 +127,6 @@ class FilmServiceTest {
                 .name("X").description("d")
                 .releaseDate(LocalDate.now())
                 .duration(90)
-                .contentRatingId(1)
                 .build();
 
         assertThrows(NotFoundException.class,
@@ -147,7 +151,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -178,7 +182,6 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
-                .contentRatingId(1)
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -203,7 +206,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -229,7 +232,7 @@ class FilmServiceTest {
                 .description("Test Desc")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(120)
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build();
         Film savedFilm = filmRepository.save(film);
 
@@ -265,7 +268,7 @@ class FilmServiceTest {
                 .description("d1")
                 .releaseDate(LocalDate.of(2001, 1, 1))
                 .duration(100)
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build());
         Film film2 = filmRepository.save(Film.builder()
                 .id(0)
@@ -273,7 +276,7 @@ class FilmServiceTest {
                 .description("d2")
                 .releaseDate(LocalDate.of(2002, 2, 2))
                 .duration(110)
-                .contentRatingId(1)
+                .mpa(mpaRepository.findAll().getFirst())
                 .build());
 
         // film1 получает 2 лайка, film2 — 1 лайк

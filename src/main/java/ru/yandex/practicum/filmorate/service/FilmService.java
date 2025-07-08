@@ -1,5 +1,4 @@
-package ru.yandex.practicum.filmorate.service.interfaces;
-
+package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -16,6 +15,8 @@ public interface FilmService {
     List<Film> findMostLikedFilms(int count);
 
     List<Film> getAllFilms();
+
+    Film getFilmById(int filmId);
 
     Film updateFilm(Film film);
 }

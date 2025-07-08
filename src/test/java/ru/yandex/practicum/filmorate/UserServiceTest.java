@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.EmailAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exception.InvalidJsonFieldException;
@@ -11,7 +12,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.OperationNotAllowedException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
-import ru.yandex.practicum.filmorate.service.interfaces.UserService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = FilmorateApplication.class)
+@AutoConfigureTestDatabase
 class UserServiceTest {
 
     @Autowired
@@ -99,7 +101,13 @@ class UserServiceTest {
         List<User> firstUserFriends = userService.getUserFriends(user1.getId());
         List<User> secondUserFriends = userService.getUserFriends(user2.getId());
 
-        assertEquals(firstUserFriends.size(), secondUserFriends.size());
+        assertEquals(1, firstUserFriends.size());
+        assertEquals(0, secondUserFriends.size());
+
+        userService.confirmFriendship(user2.getId(), user1.getId());
+
+        firstUserFriends = userService.getUserFriends(user1.getId());
+        secondUserFriends = userService.getUserFriends(user2.getId());
         assertTrue(firstUserFriends.contains(user2));
         assertTrue(secondUserFriends.contains(user1));
     }
@@ -228,16 +236,15 @@ class UserServiceTest {
     }
 
     @Test
-    void existFriendship(){
+    void existFriendship() {
         User u1 = userService.createUser(User.builder()
                 .email("u1@yandex.ru").login("u1").build());
         User u2 = userService.createUser(User.builder()
                 .email("u2@yandex.ru").login("u2").build());
         userService.makeFriends(u1.getId(), u2.getId());
-        assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
-        userService.removeFriend(u1.getId(), u2.getId());
         userService.makeFriends(u2.getId(), u1.getId());
         assertTrue(userRepository.existsFriendship(u1.getId(), u2.getId()));
+        assertTrue(userRepository.existsFriendship(u2.getId(), u1.getId()));
     }
 
     @Test
@@ -247,7 +254,7 @@ class UserServiceTest {
         User u2 = userService.createUser(User.builder()
                 .email("u2@yandex.ru").login("u2").build());
         userService.makeFriends(u1.getId(), u2.getId());
-        assertTrue(userRepository.isValidFriendRequest(u2.getId(), u1.getId()));
-        assertFalse(userRepository.isValidFriendRequest(u1.getId(), u2.getId()));
+        assertTrue(userRepository.isValidFriendRequest(u1.getId(), u2.getId()));
+        assertFalse(userRepository.isValidFriendRequest(u2.getId(), u1.getId()));
     }
 }

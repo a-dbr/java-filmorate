@@ -18,8 +18,8 @@ public class Film {
     String name;
     @Size(max = 200, message = "Описание не должно превышать 200 символов")
     String description;
-    Set<String> genre;
-    int contentRatingId;
+    Set<Genre> genres;
+    Mpa mpa;
     @ReleaseDate
     LocalDate releaseDate;
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
